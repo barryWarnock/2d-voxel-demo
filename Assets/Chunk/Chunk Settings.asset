@@ -11,3 +11,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 905d38d112fe8bc49aab049dd0333bc4, type: 3}
   m_Name: Chunk Settings
   m_EditorClassIdentifier: 
+  blockSize: 0.1
+  chunkWidth: 100
