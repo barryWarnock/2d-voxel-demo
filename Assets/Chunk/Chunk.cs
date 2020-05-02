@@ -1,12 +1,10 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using System;
+﻿using UnityEngine;
 
 public enum BlockType {
     BLOCK_AIR,
     BLOCK_A,
-    BLOCK_SAND
+    BLOCK_SAND,
+    BLOCK_NOT_FOUND
 }
 
 
@@ -19,7 +17,7 @@ public class Chunk : MonoBehaviour {
 
     private ChunkMesher chunkMesher;
 
-    private bool dirty = true;
+    protected bool dirty = true;
 
 	// Use this for initialization
 	void Start () {
@@ -52,18 +50,99 @@ public class Chunk : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
         if (dirty) {
-            chunkMesher.meshChunk(this);
             dirty = false;
+            chunkMesher.meshChunk(this);
+            updateDynamicBlocks();
         }
 	}
 
-    public void SetBlock(Vector2 pos, BlockType type) {
-        blocks[(int)pos.y, (int)pos.x] = type;
-        dirty = true;
+    private void updateDynamicBlocks() {
+        for (int y = 0; y < chunkSettings.chunkWidth; y++) {
+            for (int x = 0; x < chunkSettings.chunkWidth; x++) {
+                if (blocks[y,x] == BlockType.BLOCK_SAND) {
+                    updateSand(x,y);
+                }
+            }
+        }
     }
 
-    public BlockType GetBlock(Vector2 pos) {
-        return blocks[(int)pos.y, (int)pos.x];
+    private void updateSand(int x, int y) {
+        BlockType below = GetBlock(x, y-1);
+        if (below == BlockType.BLOCK_AIR) {
+            blocks[y,x] = BlockType.BLOCK_AIR;
+            SetBlock(x, y-1, BlockType.BLOCK_SAND);
+        } else {
+            bool sandCanFallLeft = sandCanFall(x, y, -1);
+            bool sandCanFallRight = sandCanFall(x, y, 1);
+            if (sandCanFallLeft || sandCanFallRight) {
+                blocks[y,x] = BlockType.BLOCK_AIR;
+                if (sandCanFallLeft && sandCanFallRight) {
+                    if (Random.value < 0.5) {
+                        SetBlock(x-1,y-1,BlockType.BLOCK_SAND);
+                    } else {
+                        SetBlock(x+1,y-1,BlockType.BLOCK_SAND);
+                    }
+                } else if (sandCanFallLeft) {
+                    SetBlock(x-1,y-1,BlockType.BLOCK_SAND);
+                } else {
+                    SetBlock(x+1,y-1,BlockType.BLOCK_SAND);
+                }
+            }
+        }
+    }
+
+    private bool sandCanFall(int x, int y, int xOffset) {
+        for (int i = 0; i < 3; i++) {
+            if (GetBlock(x+xOffset, y-i) != BlockType.BLOCK_AIR) {
+                return false;
+            } 
+        }
+        return true;
+    }
+
+    public void SetBlock(int x, int y, BlockType type) {
+        if (y >= chunkSettings.chunkWidth && aboveChunk != null) {
+            aboveChunk.SetBlock(x, y-chunkSettings.chunkWidth, type);
+        } else if (y < 0 && belowChunk != null) {
+            belowChunk.SetBlock(x, y+chunkSettings.chunkWidth, type);
+        } else if (x >= chunkSettings.chunkWidth && rightChunk != null) {
+            rightChunk.SetBlock(x-chunkSettings.chunkWidth, y, type);
+        } else if (x < 0 && leftChunk != null) {
+            leftChunk.SetBlock(x+chunkSettings.chunkWidth, y, type);
+        } else {
+            blocks[y,x] = type;
+            dirty = true;
+        }
+    }
+
+    public BlockType GetBlock(int x, int y) {
+        if (y >= chunkSettings.chunkWidth) {
+            if (aboveChunk != null) {
+                return aboveChunk.GetBlock(x, y-chunkSettings.chunkWidth);
+            } else {
+                return BlockType.BLOCK_NOT_FOUND;
+            }
+        } else if (y < 0) {
+            if (belowChunk != null) {
+                return belowChunk.GetBlock(x, y+chunkSettings.chunkWidth);
+            } else {
+                return BlockType.BLOCK_NOT_FOUND;
+            }
+        } else if (x >= chunkSettings.chunkWidth) {
+            if (rightChunk != null) {
+                return rightChunk.GetBlock(x-chunkSettings.chunkWidth, y);
+            } else {
+                return BlockType.BLOCK_NOT_FOUND;
+            }
+        } else if (x < 0) {
+            if (leftChunk != null) {
+                return leftChunk.GetBlock(x+chunkSettings.chunkWidth, y);
+            } else {
+                return BlockType.BLOCK_NOT_FOUND;
+            }
+        } else {
+            return blocks[y,x];
+        }
     }
 
     void OnDrawGizmosSelected() {

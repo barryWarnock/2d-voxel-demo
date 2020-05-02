@@ -23,6 +23,7 @@ public class ChunkManager : MonoBehaviour {
     private void createChunkAt(Vector2 chunkPos) {
         Chunk chunk = GameObject.Instantiate(chunkPrefab, chunkPos, Quaternion.identity).GetComponent<Chunk>();
         chunk.transform.parent = transform;
+        addNeighbours(chunk);
         chunks.Add(chunkPos, chunk);
         if (chunkPos.x < leftmost) {
             leftmost = chunkPos.x;
@@ -46,22 +47,25 @@ public class ChunkManager : MonoBehaviour {
         Chunk belowNeighbour = worldPosToChunk(belowNeighbourPos);
 
         //chunk to the left
-        if (leftNeighbour )
-        chunk.leftChunk = leftNeighbour;
-        leftNeighbour.rightChunk = chunk;
+        if (leftNeighbour != null) {
+            chunk.leftChunk = leftNeighbour;
+            leftNeighbour.rightChunk = chunk;
+        }
         //chunk to the right
-        chunk.rightChunk = rightNeighbour;
-        rightNeighbour.leftChunk = chunk;
+        if (rightNeighbour != null) {
+            chunk.rightChunk = rightNeighbour;
+            rightNeighbour.leftChunk = chunk;
+        }
         //chunk above
-        chunk.aboveChunk = aboveNeighbour;
-        aboveNeighbour.belowChunk = chunk;
+        if (aboveNeighbour != null) {
+            chunk.aboveChunk = aboveNeighbour;
+            aboveNeighbour.belowChunk = chunk;
+        }
         //chunk below
-        chunk.belowChunk = belowNeighbour;
-        belowNeighbour.aboveChunk = chunk;
-    }
-
-    private void pairNeighbours() {
-
+        if (belowNeighbour != null) {
+            chunk.belowChunk = belowNeighbour;
+            belowNeighbour.aboveChunk = chunk;
+        }
     }
 
     private Chunk worldPosToChunk(Vector2 pos) {
@@ -87,17 +91,17 @@ public class ChunkManager : MonoBehaviour {
         Chunk chunk = worldPosToChunk(pos);
         if (chunk != null) {
             Vector2 chunkLocalPos = worldPosToChunkLocal(pos, chunk);
-            chunk.SetBlock(chunkLocalPos, type);
+            chunk.SetBlock((int)chunkLocalPos.x, (int)chunkLocalPos.y, type);
         }
     }
 
-    public BlockType? GetBlock(Vector2 pos) {
+    public BlockType GetBlock(Vector2 pos) {
         Chunk chunk = worldPosToChunk(pos);
         if (chunk == null) {
-            return null;
+            return BlockType.BLOCK_NOT_FOUND;
         }
         Vector2 chunkLocalPos = worldPosToChunkLocal(pos, chunk);
-        return chunk.GetBlock(chunkLocalPos);
+        return chunk.GetBlock((int)chunkLocalPos.x, (int)chunkLocalPos.y);
     }
 	
 	// Update is called once per frame
