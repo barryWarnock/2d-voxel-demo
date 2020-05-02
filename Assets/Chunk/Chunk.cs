@@ -11,6 +11,7 @@ public enum BlockType {
 public class Chunk : MonoBehaviour {
     public ChunkSettings chunkSettings;
     public Chunk leftChunk, rightChunk, aboveChunk, belowChunk;
+    public TerrainGenerator terrainGenerator;
 
     public Mesh mesh;
     public BlockType[,] blocks;
@@ -21,49 +22,16 @@ public class Chunk : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-        initializeMesh();
         chunkMesher = ChunkMesher.GetInstance();
-        Initialize();
+        terrainGenerator.GenerateChunkTerrain(this);
+        initializeMesh();
 	}
-
-    private void Initialize() {
-        initializeBlocks();
-        chunkMesher.meshChunk(this);
-    }
-
-    private void initializeBlocks() {
-        int width = chunkSettings.chunkWidth;
-        blocks = new BlockType[width,width];
-        for (int y = 0; y < width; y++) {
-            for (int x = 0; x < width; x++) {
-                blocks[y,x] = initializeBlockAt(x, y);
-            }
-        }
-    }
-
-    private bool isBelowGround(int x, int y) {
-        int columnHeight = chunkSettings.chunkWidth * (chunkSettings.maxDepth + chunkSettings.maxHeight);
-        float worldHeight = transform.position.y+y*chunkSettings.blockSize;
-        float noiseX = transform.position.x+x*chunkSettings.blockSize;
-        float noiseHeight = Mathf.PerlinNoise(noiseX, 0);
-        Debug.Log(noiseHeight);
-        Debug.Log("---");
-        Debug.Log(worldHeight/columnHeight);
-        Debug.Log("***********");
-        Debug.Log("***********");
-        Debug.Log("***********");
-        Debug.Log("***********");
-        return worldHeight/columnHeight < noiseHeight;
-    }
-
-    private BlockType initializeBlockAt(int x, int y) {
-        return isBelowGround(x,y) ? BlockType.BLOCK_A : BlockType.BLOCK_AIR;
-    }
 
     private void initializeMesh() {
         mesh = new Mesh();
         MeshFilter meshFilter = GetComponent<MeshFilter>();
         meshFilter.mesh = mesh;
+        chunkMesher.meshChunk(this);
     }
 	
 	// Update is called once per frame

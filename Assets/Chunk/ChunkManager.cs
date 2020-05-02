@@ -9,18 +9,21 @@ public class ChunkManager : MonoBehaviour {
     private float leftmost;
     private float rightmost;
     private float chunkWorldWidth;
+    private TerrainGenerator terrainGenerator;
     public ChunkSettings chunkSettings;
     public GameObject chunkPrefab;
     public Camera mainCamera;
 
 	// Use this for initialization
 	void Start () {
+        terrainGenerator = GetComponent<TerrainGenerator>();
         chunkWorldWidth = chunkSettings.blockSize * chunkSettings.chunkWidth;
         createColumnAt(0);
 	}
 
     private void createChunkAt(Vector2 chunkPos) {
         Chunk chunk = GameObject.Instantiate(chunkPrefab, chunkPos, Quaternion.identity).GetComponent<Chunk>();
+        chunk.terrainGenerator = terrainGenerator;
         chunk.transform.parent = transform;
         addNeighbours(chunk);
         chunks.Add(chunkPos, chunk);
@@ -33,9 +36,8 @@ public class ChunkManager : MonoBehaviour {
 
     private void createColumnAt(float x) {
         int columnHeight = chunkSettings.maxDepth + chunkSettings.maxHeight;
-        float startingDepth = chunkWorldWidth * chunkSettings.maxDepth * -1;
         for (int i = 0; i < columnHeight; i++) {
-            createChunkAt(new Vector2(x, startingDepth + i * chunkWorldWidth));
+            createChunkAt(new Vector2(x, i * chunkWorldWidth));
         }
     }
 
@@ -111,7 +113,6 @@ public class ChunkManager : MonoBehaviour {
         return chunk.GetBlock((int)chunkLocalPos.x, (int)chunkLocalPos.y);
     }
 	
-	// Update is called once per frame
 	void Update () {
         Vector2 cameraBounds = new Vector2(mainCamera.orthographicSize * Screen.width / Screen.height, mainCamera.orthographicSize);
         if (mainCamera.transform.position.x + cameraBounds.x > rightmost) {

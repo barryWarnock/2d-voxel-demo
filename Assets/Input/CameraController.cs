@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class CameraController : MonoBehaviour {
     private BoxCollider2D scrollBox;
+    public ChunkSettings chunkSettings;
     //units/second
     public float baseCameraSpeed = 1;
     public float mouseDistanceMultiplier = 1.5f;
@@ -20,6 +21,9 @@ public class CameraController : MonoBehaviour {
         scrollBox = GetComponent<BoxCollider2D>();
         mainCamera = GetComponent<Camera>();
         cameraTransform = GetComponentInParent<Transform>();
+
+        float chunkWorldWidth = chunkSettings.chunkWidth * chunkSettings.blockSize;
+        cameraTransform.position = new Vector3(5, chunkWorldWidth * chunkSettings.maxDepth + chunkWorldWidth / 2, -10);
 	}
 
     private void Update() {
