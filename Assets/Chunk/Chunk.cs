@@ -41,15 +41,23 @@ public class Chunk : MonoBehaviour {
         }
     }
 
+    private bool isBelowGround(int x, int y) {
+        int columnHeight = chunkSettings.chunkWidth * (chunkSettings.maxDepth + chunkSettings.maxHeight);
+        float worldHeight = transform.position.y+y*chunkSettings.blockSize;
+        float noiseX = transform.position.x+x*chunkSettings.blockSize;
+        float noiseHeight = Mathf.PerlinNoise(noiseX, 0);
+        Debug.Log(noiseHeight);
+        Debug.Log("---");
+        Debug.Log(worldHeight/columnHeight);
+        Debug.Log("***********");
+        Debug.Log("***********");
+        Debug.Log("***********");
+        Debug.Log("***********");
+        return worldHeight/columnHeight < noiseHeight;
+    }
+
     private BlockType initializeBlockAt(int x, int y) {
-        int width = chunkSettings.chunkWidth;
-        if (transform.position.y > 0) {
-            return BlockType.BLOCK_AIR;
-        } else if (transform.position.y < 0) {
-            return BlockType.BLOCK_A;
-        } else {
-            return y < width / 2 ? BlockType.BLOCK_A : BlockType.BLOCK_AIR;
-        }
+        return isBelowGround(x,y) ? BlockType.BLOCK_A : BlockType.BLOCK_AIR;
     }
 
     private void initializeMesh() {
