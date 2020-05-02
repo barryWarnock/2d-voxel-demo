@@ -34,10 +34,21 @@ public class Chunk : MonoBehaviour {
     private void initializeBlocks() {
         int width = chunkSettings.chunkWidth;
         blocks = new BlockType[width,width];
-       for (int y = 0; y < width; y++) {
+        for (int y = 0; y < width; y++) {
             for (int x = 0; x < width; x++) {
-                blocks[y,x] = y < width / 2 ? BlockType.BLOCK_A : BlockType.BLOCK_AIR;
+                blocks[y,x] = initializeBlockAt(x, y);
             }
+        }
+    }
+
+    private BlockType initializeBlockAt(int x, int y) {
+        int width = chunkSettings.chunkWidth;
+        if (transform.position.y > 0) {
+            return BlockType.BLOCK_AIR;
+        } else if (transform.position.y < 0) {
+            return BlockType.BLOCK_A;
+        } else {
+            return y < width / 2 ? BlockType.BLOCK_A : BlockType.BLOCK_AIR;
         }
     }
 
@@ -112,6 +123,16 @@ public class Chunk : MonoBehaviour {
         } else {
             blocks[y,x] = type;
             dirty = true;
+            dirtyChunk(aboveChunk);
+            dirtyChunk(belowChunk);
+            dirtyChunk(leftChunk);
+            dirtyChunk(rightChunk);
+        }
+    }
+
+    private void dirtyChunk(Chunk chunk) {
+        if (chunk != null) {
+            chunk.dirty = true;
         }
     }
 

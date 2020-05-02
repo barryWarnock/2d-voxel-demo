@@ -16,8 +16,7 @@ public class ChunkManager : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
         chunkWorldWidth = chunkSettings.blockSize * chunkSettings.chunkWidth;
-        Vector2 chunkPos = new Vector2(0, 0);
-        createChunkAt(chunkPos);
+        createColumnAt(0);
 	}
 
     private void createChunkAt(Vector2 chunkPos) {
@@ -29,6 +28,14 @@ public class ChunkManager : MonoBehaviour {
             leftmost = chunkPos.x;
         } else if (chunkPos.x > rightmost) {
             rightmost = chunkPos.x;
+        }
+    }
+
+    private void createColumnAt(float x) {
+        int columnHeight = chunkSettings.maxDepth + chunkSettings.maxHeight;
+        float startingDepth = chunkWorldWidth * chunkSettings.maxDepth * -1;
+        for (int i = 0; i < columnHeight; i++) {
+            createChunkAt(new Vector2(x, startingDepth + i * chunkWorldWidth));
         }
     }
 
@@ -108,10 +115,10 @@ public class ChunkManager : MonoBehaviour {
 	void Update () {
         Vector2 cameraBounds = new Vector2(mainCamera.orthographicSize * Screen.width / Screen.height, mainCamera.orthographicSize);
         if (mainCamera.transform.position.x + cameraBounds.x > rightmost) {
-            createChunkAt(new Vector2(rightmost+chunkWorldWidth,0));
+            createColumnAt(rightmost+chunkWorldWidth);
         }
         if (mainCamera.transform.position.x - cameraBounds.x < leftmost) {
-            createChunkAt(new Vector2(leftmost-chunkWorldWidth,0));
+            createColumnAt(leftmost-chunkWorldWidth);
         }
 	}
 }
