@@ -3,8 +3,16 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 
+public enum BlockType {
+    BLOCK_AIR,
+    BLOCK_A,
+    BLOCK_SAND
+}
+
+
 public class Chunk : MonoBehaviour {
     public ChunkSettings chunkSettings;
+    public Chunk leftChunk, rightChunk, aboveChunk, belowChunk;
 
     public Mesh mesh;
     public BlockType[,] blocks;

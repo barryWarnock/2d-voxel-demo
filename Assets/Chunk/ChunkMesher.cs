@@ -2,12 +2,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum BlockType {
-    BLOCK_AIR,
-    BLOCK_A,
-    BLOCK_B
-}
-
 public class ChunkMesher : MonoBehaviour {
     public static ChunkMesher instance = null;
     public ChunkSettings chunkSettings;
@@ -64,7 +58,7 @@ public class ChunkMesher : MonoBehaviour {
         switch (type) {
             case BlockType.BLOCK_A:
                 return new Vector2[] {new Vector2(0, 0), new Vector2(0.1f, 0), new Vector2(0, 1), new Vector2(0.1f, 1)};
-            case BlockType.BLOCK_B:
+            case BlockType.BLOCK_SAND:
                 return new Vector2[] {new Vector2(0.9f, 0), new Vector2(1, 0), new Vector2(0.9f, 1), new Vector2(1, 1)};
             default:
                 throw new System.Exception("trying to access the uv coords for a block type that isn't defined");
